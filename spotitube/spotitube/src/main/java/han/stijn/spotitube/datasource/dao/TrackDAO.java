@@ -14,28 +14,28 @@ public class TrackDAO {
 
     private PreparedStatementHelper preparedStatementHelper;
     private ResultSetReader resultSetReader;
-    public ArrayList<TrackDTO> getTracks(int playlistID){
-        ArrayList<TrackDTO> tracks = new ArrayList<>();
-        String query = "SELECT * FROM TRACK T WHERE T.TRACKID IN (SELECT TRACKID FROM TRACK_ON_PLAYLIST WHERE PLAYLISTID = ?)";
+    public TracksDTO getTracks(int playlistID){
+        var tracks = new ArrayList<TrackDTO>();
+        var query = "SELECT * FROM TRACK T WHERE T.TRACKID IN (SELECT TRACKID FROM TRACK_ON_PLAYLIST WHERE PLAYLISTID = ?)";
         var parameters = new ArrayList<ISQLParameter>();
         parameters.add(SQLParameterFactory.createParameter(1,playlistID));
         ResultSet trackResults = preparedStatementHelper.executeQueryWithResultAndTransaction(query,parameters);
         processTracks(tracks,trackResults);
-        return tracks;
+        return new TracksDTO(tracks);
     }
 
-    public ArrayList<TrackDTO> getAvailableTracks(int playlistID) {
-        ArrayList<TrackDTO> tracks = new ArrayList<>();
-        String query = "SELECT * FROM TRACK T WHERE T.TRACKID IN (SELECT TRACKID FROM TRACK_ON_PLAYLIST WHERE PLAYLISTID != ?)";
+    public TracksDTO getAvailableTracks(int playlistID) {
+        var tracks = new ArrayList<TrackDTO>();
+        var query = "SELECT * FROM TRACK T WHERE T.TRACKID IN (SELECT TRACKID FROM TRACK_ON_PLAYLIST WHERE PLAYLISTID != ?)";
         var parameters = new ArrayList<ISQLParameter>();
         parameters.add(SQLParameterFactory.createParameter(1,playlistID));
         ResultSet trackResults = preparedStatementHelper.executeQueryWithResultAndTransaction(query,parameters);
         processTracks(tracks,trackResults);
-        return tracks;
+        return new TracksDTO(tracks);
     }
 
     public boolean addTrackToPlaylist(int playlistID, int trackID) {
-        String query = "INSERT INTO TRACK_ON_PLAYLIST VALUES (?,?)";
+        var query = "INSERT INTO TRACK_ON_PLAYLIST VALUES (?,?)";
         var parameters = new ArrayList<ISQLParameter>();
         parameters.add(SQLParameterFactory.createParameter(1,playlistID));
         parameters.add(SQLParameterFactory.createParameter(2,trackID));
@@ -44,7 +44,7 @@ public class TrackDAO {
     }
 
     public boolean deleteTrackFromPlaylist(int playlistID, int trackID) {
-        String query = "DELETE FROM TRACK_ON_PLAYLIST WHERE PLAYLISTID = ? AND TRACKID = ?";
+        var query = "DELETE FROM TRACK_ON_PLAYLIST WHERE PLAYLISTID = ? AND TRACKID = ?";
         var parameters = new ArrayList<ISQLParameter>();
         parameters.add(SQLParameterFactory.createParameter(1,playlistID));
         parameters.add(SQLParameterFactory.createParameter(2,trackID));
@@ -56,15 +56,15 @@ public class TrackDAO {
     public void processTracks(ArrayList<TrackDTO> tracks, ResultSet trackResults){
         try {
             while(resultSetReader.determineNextInResult(trackResults)){
-                int trackID = resultSetReader.readInteger(trackResults,"TRACKID");
-                String trackTitle = resultSetReader.readString(trackResults,"TRACKTITLE");
-                String performer = resultSetReader.readString(trackResults,"PERFORMER");
-                int trackDuration = resultSetReader.readInteger(trackResults,"TRACKDURATION");
-                int trackPlaycount = resultSetReader.readInteger(trackResults,"PLAYCOUNT");
-                boolean isOfflineAvailable = resultSetReader.readBoolean(trackResults,"OFFLINEAVAILABLE");
-                String album = resultSetReader.readString(trackResults,"ALBUM");
-                int publicationDate = resultSetReader.readInteger(trackResults,"PUBLICATIONDATE");
-                String description = resultSetReader.readString(trackResults,"TRACKDESCRIPTION");
+                var trackID = resultSetReader.readInteger(trackResults,"TRACKID");
+                var trackTitle = resultSetReader.readString(trackResults,"TRACKTITLE");
+                var performer = resultSetReader.readString(trackResults,"PERFORMER");
+                var trackDuration = resultSetReader.readInteger(trackResults,"TRACKDURATION");
+                var trackPlaycount = resultSetReader.readInteger(trackResults,"PLAYCOUNT");
+                var isOfflineAvailable = resultSetReader.readBoolean(trackResults,"OFFLINEAVAILABLE");
+                var album = resultSetReader.readString(trackResults,"ALBUM");
+                var publicationDate = resultSetReader.readInteger(trackResults,"PUBLICATIONDATE");
+                var description = resultSetReader.readString(trackResults,"TRACKDESCRIPTION");
                 tracks.add(TrackFactory.createTrack(trackID, trackTitle, performer, trackDuration, trackPlaycount,
                         album, publicationDate, description, isOfflineAvailable));
             }

@@ -30,7 +30,7 @@ public class PlaylistDAOTest {
                 .readString(ArgumentMatchers.any(ResultSet.class),ArgumentMatchers.contains("NAME"));
         Mockito.doReturn("username").when(mockedResultSetReader)
                 .readString(ArgumentMatchers.any(ResultSet.class),ArgumentMatchers.contains("OWNER"));
-        Mockito.doReturn(tracks).when(mockedTrackDAO)
+        Mockito.doReturn(new TracksDTO(tracks)).when(mockedTrackDAO)
                 .getTracks(ArgumentMatchers.anyInt());
     }
 
@@ -40,12 +40,13 @@ public class PlaylistDAOTest {
         ArrayList<TrackDTO> tracks = new ArrayList<>();
         tracks.add(track);
         PlaylistDTO testPlaylist = new PlaylistDTO(0,"title",false,tracks);
+        PlaylistsDTO testPlaylists = new PlaylistsDTO(List.of(testPlaylist),0);
         Mockito.doReturn(true,false).when(mockedResultSetReader).determineNextInResult(ArgumentMatchers.any(ResultSet.class));
         //Act
 
         //Assert
         for (PlaylistDTO playlist :
-                sut.getPlaylists("token")) {
+                sut.getPlaylists("token").getPlaylists()) {
             assertEquals(playlist.toString(),testPlaylist.toString());
         }
     }

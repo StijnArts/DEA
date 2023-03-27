@@ -19,8 +19,9 @@ public class LoginDAO extends DatabaseLogger {
     private TokenGenerator tokenGenerator;
 
     public boolean checkLogin(LoginDTO loginDTO){
+
         try {
-            String query = "SELECT [PASSWORD] AS [password] FROM [USER] WHERE [USERNAME] = ?";
+            var query = "SELECT [PASSWORD] AS [password] FROM [USER] WHERE [USERNAME] = ?";
             var parameters = new ArrayList<ISQLParameter>();
             parameters.add(SQLParameterFactory.createParameter(1,loginDTO.getUser()));
             ResultSet resultSet = preparedStatementHelper.executeQueryWithResultAndTransaction(query,parameters);
@@ -52,7 +53,7 @@ public class LoginDAO extends DatabaseLogger {
     }
 
     public void putToken(String username){
-        String query = "UPDATE [USER] SET [TOKEN]=? WHERE [USERNAME] = ?";
+        var query = "UPDATE [USER] SET [TOKEN]=? WHERE [USERNAME] = ?";
         var parameters = new ArrayList<ISQLParameter>();
         parameters.add(SQLParameterFactory.createParameter(1,tokenGenerator.generateToken()));
         parameters.add(SQLParameterFactory.createParameter(2,username));
@@ -61,7 +62,7 @@ public class LoginDAO extends DatabaseLogger {
 
     public boolean checkToken(String token){
         try {
-            String query = "SELECT TOKEN FROM [USER] WHERE TOKEN = ?";
+            var query = "SELECT TOKEN FROM [USER] WHERE TOKEN = ?";
             var parameters = new ArrayList<ISQLParameter>();
             parameters.add(SQLParameterFactory.createParameter(1,token));
             ResultSet resultSet = preparedStatementHelper.executeQueryWithResultAndTransaction(query,parameters);

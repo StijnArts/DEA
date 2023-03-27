@@ -6,7 +6,7 @@ import java.sql.*;
 
 public class DatabaseConnection extends DatabaseLogger {
     public static Connection getConnection(){
-        DatabaseProperties databaseProperties = new DatabaseProperties();
+        var databaseProperties = new DatabaseProperties();
         Connection connection = null;
         try {
             Class.forName(databaseProperties.driverString());

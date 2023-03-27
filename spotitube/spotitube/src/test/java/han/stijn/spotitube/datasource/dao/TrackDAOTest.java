@@ -48,7 +48,7 @@ public class TrackDAOTest {
 
         //Assert
         for (TrackDTO sutDTO :
-                sut.getTracks(0)) {
+                sut.getTracks(0).getTracks()) {
             assertEquals(sutDTO.toString(),track.toString());
         }
     }
@@ -62,8 +62,7 @@ public class TrackDAOTest {
         //Act
 
         //Assert
-        for (TrackDTO sutDTO :
-                sut.getAvailableTracks(0)) {
+        for (TrackDTO sutDTO : sut.getAvailableTracks(0).getTracks()) {
             assertEquals(sutDTO.toString(),track.toString());
         }
     }

@@ -7,6 +7,7 @@ import jakarta.inject.*;
 
 import java.sql.*;
 import java.util.*;
+import java.util.logging.*;
 
 public class PreparedStatementHelper {
 
@@ -59,7 +60,7 @@ public class PreparedStatementHelper {
     }
 
     private PreparedStatement createPreparedStatement(String query, ArrayList<ISQLParameter> parameters) throws SQLException {
-        PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(query);
+        var preparedStatement = databaseConnection.getConnection().prepareStatement(query);
         prepareParameters(parameters, preparedStatement);
         return preparedStatement;
     }

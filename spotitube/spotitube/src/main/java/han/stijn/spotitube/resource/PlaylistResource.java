@@ -31,7 +31,7 @@ public class PlaylistResource {
     @Path("/playlists/{id}")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response deletePlaylist(@PathParam("id") int id,@QueryParam("token") String token){
+    public Response deletePlaylist(@PathParam("id") int id, @QueryParam("token") String token){
         if(loginDAO.checkToken(token)) {
             playlistDAO.deletePlaylist(id, token);
             return getPlaylists(token);
@@ -46,7 +46,7 @@ public class PlaylistResource {
     public Response addTrackToPlaylist(TrackDTO trackDTO, @PathParam("id") int playlistID, @QueryParam("token") String token){
         if(loginDAO.checkToken(token)){
             if(trackDAO.addTrackToPlaylist(playlistID,trackDTO.getId())){
-                return trackResource.getTracks(playlistID,token);
+                return Response.ok(trackResource.getTracks(playlistID,token)).build();
             }
         }
         return Response.status(403).build();
@@ -57,10 +57,9 @@ public class PlaylistResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteTrackFromPlaylist(@PathParam("playlistID") int playlistID,@PathParam("trackID") int trackID, @QueryParam("token") String token){
-        //TODO add track and ask about how to read an incoming json
         if(loginDAO.checkToken(token)){
             if(trackDAO.deleteTrackFromPlaylist(playlistID,trackID)){
-                return trackResource.getTracks(playlistID,token);
+                return Response.ok(trackResource.getTracks(playlistID,token)).build();
             }
         }
         return Response.status(403).build();
@@ -84,7 +83,7 @@ public class PlaylistResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response editPlaylist(NewPlaylistDTO newPlaylistDTO,@PathParam("id") int id, @QueryParam("token")String token){
         if(loginDAO.checkToken(token)){
-            playlistDAO.addPlaylist(newPlaylistDTO, token);
+            playlistDAO.editPlaylist(newPlaylistDTO, token, id);
             return getPlaylists(token);
         }
         return Response.status(403).build();

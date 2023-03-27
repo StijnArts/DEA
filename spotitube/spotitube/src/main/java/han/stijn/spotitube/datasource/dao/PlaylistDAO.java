@@ -15,8 +15,8 @@ public class PlaylistDAO {
     private ResultSetReader resultSetReader;
     private PreparedStatementHelper preparedStatementHelper;
 
-    public ArrayList<PlaylistDTO> getPlaylists(String token){
-        ArrayList<PlaylistDTO> playlistDTOs = new ArrayList<>();
+    public PlaylistsDTO getPlaylists(String token){
+        var playlistDTOs = new ArrayList<PlaylistDTO>();
         try {
             String query = "SELECT pl.PLAYLISTID as [PLAYLISTID], pl.[NAME] as [NAME], pl.[OWNER] as [OWNER] " +
                     "FROM [PLAYLIST] pl " +
@@ -29,25 +29,26 @@ public class PlaylistDAO {
             var parameters = new ArrayList<ISQLParameter>();
             parameters.add(SQLParameterFactory.createParameter(1,token));
             parameters.add(SQLParameterFactory.createParameter(2,token));
-            ResultSet playlistResults = preparedStatementHelper.executeQueryWithResultAndTransaction(query,parameters);
+            var playlistResults = preparedStatementHelper.executeQueryWithResultAndTransaction(query,parameters);
             while(resultSetReader.determineNextInResult(playlistResults)){
                 playlistDTOs.add(new PlaylistDTO(
                         resultSetReader.readInteger(playlistResults,"PLAYLISTID"),
                         resultSetReader.readString(playlistResults,"NAME"),
                         checkOwnership(token, resultSetReader.readString(playlistResults,"OWNER")),
-                        trackDAO.getTracks(resultSetReader.readInteger(playlistResults,"PLAYLISTID"))
+                        trackDAO.getTracks(resultSetReader.readInteger(playlistResults,"PLAYLISTID")).getTracks()
                         )
                 );
             }
         } catch (SQLException e) {
             throw new UserNotFoundException("User not found in database.",e);
         }
-        return playlistDTOs;
+        var playlistsDTO = new PlaylistsDTO(playlistDTOs,determineLength(playlistDTOs));
+        return playlistsDTO;
     }
 
     public void deletePlaylist(int id, String token) {
         if(checkOwnership(id, token)){
-            String query = "DELETE FROM PLAYLIST WHERE PLAYLISTID = ?";
+            var query = "DELETE FROM PLAYLIST WHERE PLAYLISTID = ?";
             var parameters = new ArrayList<ISQLParameter>();
             parameters.add(SQLParameterFactory.createParameter(1,id));
             preparedStatementHelper.executeQueryWithoutResultWithTransaction(query, parameters);
@@ -61,10 +62,10 @@ public class PlaylistDAO {
 
     public boolean checkOwnership(String token, String owner){
         try {
-            String query = "SELECT [USERNAME] FROM [USER] WHERE Token = ?";
+            var query = "SELECT [USERNAME] FROM [USER] WHERE Token = ?";
             var parameters = new ArrayList<ISQLParameter>();
             parameters.add(SQLParameterFactory.createParameter(1,token));
-            ResultSet ownershipResult = preparedStatementHelper.executeQueryWithResultAndTransaction(query,parameters);
+            var ownershipResult = preparedStatementHelper.executeQueryWithResultAndTransaction(query,parameters);
             while(resultSetReader.determineNextInResult(ownershipResult)){
                 String foundUser = resultSetReader.readString(ownershipResult,"USERNAME");
                 if(foundUser.equals(owner)){
@@ -80,7 +81,7 @@ public class PlaylistDAO {
     public boolean checkOwnership(int id, String token){
         ResultSet ownershipResult;
         try {
-            String query = "SELECT [OWNER] FROM PLAYLIST " +
+            var query = "SELECT [OWNER] FROM PLAYLIST " +
                     "WHERE [OWNER] IN (SELECT [USERNAME] FROM [USER] WHERE Token = ?) AND PLAYLISTID = ?";
             var parameters = new ArrayList<ISQLParameter>();
             parameters.add(SQLParameterFactory.createParameter(1,token));
@@ -93,7 +94,7 @@ public class PlaylistDAO {
     }
 
     public void addPlaylist(NewPlaylistDTO newPlaylistDTO, String token) {
-        String query = "INSERT INTO PLAYLIST SELECT ?,?, [USERNAME] FROM [USER] where [Token] = ?";
+        var query = "INSERT INTO PLAYLIST SELECT ?,?, [USERNAME] FROM [USER] where [Token] = ?";
         var parameters = new ArrayList<ISQLParameter>();
         parameters.add(SQLParameterFactory.createParameter(1,newPlaylistDTO.getId()));
         parameters.add(SQLParameterFactory.createParameter(2,newPlaylistDTO.getName()));
@@ -103,10 +104,10 @@ public class PlaylistDAO {
 
     public void editPlaylist(NewPlaylistDTO newPlaylistDTO, String token, int id) {
         if(checkOwnership(newPlaylistDTO.getId(), token)){
-            String query = "UPDATE PLAYLIST SET [NAME] = ? WHERE PLAYLISTID = ?";
+            var query = "UPDATE PLAYLIST SET [NAME] = ? WHERE PLAYLISTID = ?";
             var parameters = new ArrayList<ISQLParameter>();
             parameters.add(SQLParameterFactory.createParameter(1,newPlaylistDTO.getName()));
-            parameters.add(SQLParameterFactory.createParameter(2,id));
+            parameters.add(SQLParameterFactory.createParameter(2, id));
             preparedStatementHelper.executeQueryWithoutResultWithTransaction(query, parameters);
         }
     }
@@ -117,5 +118,16 @@ public class PlaylistDAO {
     @Inject
     public void setPreparedStatementHelper(PreparedStatementHelper preparedStatementHelper) {
         this.preparedStatementHelper = preparedStatementHelper;
+    }
+
+    public int determineLength(ArrayList<PlaylistDTO> playlistDTOS){
+        int length =0;
+        for(PlaylistDTO playlist : playlistDTOS){
+            for(TrackDTO track : playlist.getTracks()){
+                length +=track.getDuration();
+            }
+        }
+
+        return length;
     }
 }

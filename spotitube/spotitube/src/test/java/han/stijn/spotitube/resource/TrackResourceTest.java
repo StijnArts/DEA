@@ -24,9 +24,10 @@ public class TrackResourceTest {
         sut.setLoginDAO(mockedLoginDAO);
         ArrayList<TrackDTO> tracks = new ArrayList<>();
         tracks.add(track);
-        Mockito.doReturn(tracks).when(mockedTrackDAO)
+
+        Mockito.doReturn(new TracksDTO(tracks)).when(mockedTrackDAO)
                 .getTracks(ArgumentMatchers.anyInt());
-        Mockito.doReturn(tracks).when(mockedTrackDAO)
+        Mockito.doReturn(new TracksDTO(tracks)).when(mockedTrackDAO)
                 .getAvailableTracks(ArgumentMatchers.anyInt());
     }
 
